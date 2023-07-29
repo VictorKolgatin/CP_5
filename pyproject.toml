@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cp-5"
+version = "0.1.0"
+description = ""
+authors = ["Victor <kolgatin@gmail.com>"]
+readme = "README.md"
+packages = [{include = "cp_5"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
