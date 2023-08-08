@@ -1,10 +1,10 @@
 import psycopg2
 import csv
 
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT  # почитать про "уровни изоляции транзакций"
 from psycopg2 import Error
 
-from config import host, database, user, password
+from config import HOST, DATABASE, USER, PASSWORD  # сделать пример конфига
 
 
 class DBManager:
@@ -12,7 +12,7 @@ class DBManager:
     Класс для работы с БД.
     """
 
-    def __init__(self, host=host, database=database, user=user, password=password):
+    def __init__(self, host=HOST, database=DATABASE, user=USER, password=PASSWORD):
         self.host = host
         self.database = database
         self.user = user
@@ -38,7 +38,7 @@ class DBManager:
             conn = psycopg2.connect(user=self.user,
                                     password=self.password,
                                     host=self.host,
-                                    port="5432")
+                                    port="5432")  # порт хардкодом, а если другой?
             conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             # Курсор для выполнения операций с базой данных
             cursor = conn.cursor()
@@ -52,8 +52,13 @@ class DBManager:
                 conn.close()
                 print("Соединение с PostgreSQL закрыто")
 
+    def execute(self, sql):
+        ...
 
-    def create_tab_emp(self):
+    def get_data(self, sql, **params):
+        ...
+
+    def create_tab_emp(self):  # дублирование кода
         conn = self.conn_db()
         with conn.cursor() as cur:
             cur.execute("""
@@ -68,7 +73,7 @@ class DBManager:
         conn.commit()
         conn.close()
 
-    def create_tab_vac(self):
+    def create_tab_vac(self):  # дублирование кода
         conn = self.conn_db()
         with conn.cursor() as cur:
             cur.execute("""
@@ -90,7 +95,7 @@ class DBManager:
         """
         Заполнение данными employers
         """
-        file_employers = '/home/vk/Рабочий стол/Курс SkyPro/5.SQL/CP_5/src/employers.csv'
+        file_employers = '/home/vk/Рабочий стол/Курс SkyPro/5.SQL/CP_5/src/employers.csv'  # а если у меня винда?
         conn = self.conn_db()
         try:
             with conn:
@@ -108,7 +113,7 @@ class DBManager:
         """
         Заполнение данными employers
         """
-        file_vacancy = '/home/vk/Рабочий стол/Курс SkyPro/5.SQL/CP_5/src/vacancies.csv'
+        file_vacancy = '/home/vk/Рабочий стол/Курс SkyPro/5.SQL/CP_5/src/vacancies.csv'  # а если у меня винда?
         conn = self.conn_db()
         try:
             with conn:
@@ -123,7 +128,7 @@ class DBManager:
         finally:
             conn.close()
 
-    def get_companies_and_vacancies_count(self):
+    def get_companies_and_vacancies_count(self):  # дублирование кода
         """
         Получает список всех компаний и количество вакансий у каждой компании.
         """
@@ -139,7 +144,7 @@ class DBManager:
         conn.close()
         return result
 
-    def get_all_vacancies(self):
+    def get_all_vacancies(self):  # дублирование кода
         """
         Получает список всех вакансий с указанием названия компании,
         названия вакансии и зарплаты и ссылки на вакансию.
@@ -154,7 +159,7 @@ class DBManager:
         conn.close()
         return result
 
-    def get_avg_salary(self):
+    def get_avg_salary(self):  # дублирование кода
         """
         Получает среднюю зарплату по вакансиям.
         """
@@ -170,7 +175,7 @@ class DBManager:
         conn.close()
         return result
 
-    def get_vacancies_with_higher_salary(self):
+    def get_vacancies_with_higher_salary(self):  # дублирование кода
         """
         Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям.
         """
@@ -185,7 +190,7 @@ class DBManager:
         conn.close()
         return result
 
-    def get_vacancies_with_keyword(self, keyword):
+    def get_vacancies_with_keyword(self, keyword):  # дублирование кода
         """
         Получает список всех вакансий, в названии которых содержатся переданные в метод слова,
         например “python”.
@@ -196,9 +201,8 @@ class DBManager:
             cur.execute("""
                         SELECT name_vacancy, employer, url_vac
                         FROM vacancies
-                        WHERE lower(name_vacancy) LIKE '%{kw}%'
-                        """)
+                        WHERE lower(name_vacancy) LIKE '%{}%'
+                        """.format(kw))
             result = cur.ftchall()
         conn.close()
         return result
-

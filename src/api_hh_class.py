@@ -47,10 +47,9 @@ class HeadHunterAPI:
 
         return employers_list
 
-    @staticmethod
-    def get_vacancies():
-        data = HeadHunterAPI()
-        data_hh = data.get_employers()
+    def get_vacancies(self):
+        """Получает вакансии по HH API по id работодателя"""
+        data_hh = self.get_employers()
 
         emp_id = []
         for item in data_hh:
@@ -59,7 +58,7 @@ class HeadHunterAPI:
         vac_emp = []
         for i in emp_id:
             vacancy = requests.get(f"https://api.hh.ru/vacancies?employer_id={i}").json()['items']
-
+            # timeout?
             for vacancy in vacancy:
                 area = vacancy['area']['name']
                 name = vacancy['name']
