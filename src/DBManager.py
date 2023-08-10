@@ -4,7 +4,7 @@ import csv
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from psycopg2 import Error
 
-from config import host, database, user, password
+from config import HOST, DATABASE, USER, PASSWORD, PORT
 
 
 class DBManager:
@@ -12,12 +12,13 @@ class DBManager:
     Класс для работы с БД.
     """
 
-    def __init__(self, host=host, database=database, user=user, password=password):
+    def __init__(self, host=HOST, database=DATABASE, user=USER, password=PASSWORD, port=PORT):
         self.host = host
         self.database = database
         self.user = user
         self.password = password
         self.conn = None
+        self.port = port
 
     def conn_db(self):
         """
@@ -33,12 +34,14 @@ class DBManager:
         return self.conn
 
     def create_db(self, name_db):
+        conn = None
+        cursor = None
         try:
             # Подключение к существующей базе данных
             conn = psycopg2.connect(user=self.user,
                                     password=self.password,
                                     host=self.host,
-                                    port="5432")
+                                    port=self.port)
             conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             # Курсор для выполнения операций с базой данных
             cursor = conn.cursor()
@@ -52,45 +55,11 @@ class DBManager:
                 conn.close()
                 print("Соединение с PostgreSQL закрыто")
 
-
-    def create_tab_emp(self):
-        conn = self.conn_db()
-        with conn.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE employers
-                (
-                    employer_id int PRIMARY KEY,
-                    employer_name varchar(255),
-                    employer_url varchar(255),
-                    open_vacancy int
-                )
-            """)
-        conn.commit()
-        conn.close()
-
-    def create_tab_vac(self):
-        conn = self.conn_db()
-        with conn.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE vacancies
-                (
-                    area varchar (255),
-                    name_vacancy varchar (255),
-                    employer varchar (255),
-                    url_vac varchar (255),
-                    salary_from int,
-                    salary_to int,
-                    currency varchar (255),
-                )
-            """)
-        conn.commit()
-        conn.close()
-
     def insert_emp(self):
         """
         Заполнение данными employers
         """
-        file_employers = '/home/vk/Рабочий стол/Курс SkyPro/5.SQL/CP_5/src/employers.csv'
+        file_employers = 'employers.csv'
         conn = self.conn_db()
         try:
             with conn:
@@ -108,7 +77,7 @@ class DBManager:
         """
         Заполнение данными employers
         """
-        file_vacancy = '/home/vk/Рабочий стол/Курс SkyPro/5.SQL/CP_5/src/vacancies.csv'
+        file_vacancy = 'vacancies.csv'
         conn = self.conn_db()
         try:
             with conn:
@@ -116,71 +85,20 @@ class DBManager:
                     with open(file_vacancy) as csvfile:
                         readers = csv.DictReader(csvfile)
                         for reader in readers:
-                            cur.execute("INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                            cur.execute("INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s)",
                                         (reader['area'], reader['name'], reader['employer'],
-                                         reader['url'], reader['salary_from'], reader['salary_to'],
-                                         reader['currency']))
+                                         reader['url'], reader['salary_from'], reader['salary_to']))
         finally:
             conn.close()
 
-    def get_companies_and_vacancies_count(self):
+    def execute(self, sql_queries):
         """
-        Получает список всех компаний и количество вакансий у каждой компании.
+        Выполнение sql запросов, файл queries.py
         """
         conn = self.conn_db()
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT employer, COUNT(*)
-                FROM vacancies
-                GROUP BY employer
-                ORDER BY COUNT(*) DESC 
-            """)
-            result = cur.fetchall()
-        conn.close()
-        return result
+            cur.execute(sql_queries)
 
-    def get_all_vacancies(self):
-        """
-        Получает список всех вакансий с указанием названия компании,
-        названия вакансии и зарплаты и ссылки на вакансию.
-        """
-        conn = self.conn_db()
-        with conn.cursor() as cur:
-            cur.execute("""
-                        SELECT employer, name_vacancy, salary_from, selary_to, currency, url_vac
-                        FROM vacancies 
-                        """)
-            result = cur.fetchall()
-        conn.close()
-        return result
-
-    def get_avg_salary(self):
-        """
-        Получает среднюю зарплату по вакансиям.
-        """
-        conn = self.conn_db()
-        with conn.cursor() as cur:
-            cur.execute("""
-                        SELECT round(AVG(salary_from)) as от, 
-                        (SELECT round(AVG(salary_to)) as до 
-                        FROM vacancies WHERE salary_to <> 0)
-                        FROM vacancies 
-                        WHERE salary_from <>0""")
-            result = cur.fetchall()
-        conn.close()
-        return result
-
-    def get_vacancies_with_higher_salary(self):
-        """
-        Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям.
-        """
-        conn = self.conn_db()
-        with conn.cursor() as cur:
-            cur.execute("""
-                        SELECT name_vacancy, employer, salary_from, url_vac
-                        FROM vacancies
-                        WHERE salary_from >= (SELECT AVG(salary_from) FROM vacancies)
-                        ORDER BY employer""")
             result = cur.fetchall()
         conn.close()
         return result
@@ -193,7 +111,7 @@ class DBManager:
         conn = self.conn_db()
         kw = keyword.lower()
         with conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(f"""
                         SELECT name_vacancy, employer, url_vac
                         FROM vacancies
                         WHERE lower(name_vacancy) LIKE '%{kw}%'
@@ -201,4 +119,3 @@ class DBManager:
             result = cur.ftchall()
         conn.close()
         return result
-
