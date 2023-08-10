@@ -1,6 +1,5 @@
-import csv
-
 import requests
+from config import employers_id
 
 
 class HeadHunterAPI:
@@ -9,24 +8,11 @@ class HeadHunterAPI:
     """
 
     def __init__(self):
-        self.employers_id = {
-            'Webtronics': 5843588,
-            'СОГАЗ': 955,
-            'Miles&Miles': 5819349,
-            'amoCRM': 999442,
-            'Апэрбот': 4602050,
-            'Ozon': 2180,
-            'Ростелеком': 2748,
-            'Яндекс': 1740,
-            'SberTech': 906557,
-            'Тинькофф': 78638
-
-        }
+        self.employers_id = employers_id
 
     def get_employers(self):
         """
         Метод класса HeadHunterAPI, для получения интересующих работодателй по их id.
-        :return: employers_list
         """
         employers_list = []
         for i in self.employers_id.values():
@@ -38,26 +24,15 @@ class HeadHunterAPI:
                          'open_vacancy': response['open_vacancies']}
 
             employers_list.append(employers)
-
-        keys = employers_list[0].keys()
-        with open("employers.csv", 'w', encoding='utf-8', newline='') as file:
-            file_writer = csv.DictWriter(file, keys)
-            file_writer.writeheader()
-            file_writer.writerows(employers_list)
-
         return employers_list
 
-    @staticmethod
-    def get_vacancies():
-        data = HeadHunterAPI()
-        data_hh = data.get_employers()
-
-        emp_id = []
-        for item in data_hh:
-            emp_id.append(item['emp_id'])
-
+    def get_vacancies_and_format(self):
+        """
+        Получает вакансии по HH API по id работодателя.
+        Форматируем список вакансий к удобному виду.
+        """
         vac_emp = []
-        for i in emp_id:
+        for i in self.employers_id.values():
             vacancy = requests.get(f"https://api.hh.ru/vacancies?employer_id={i}").json()['items']
 
             for vacancy in vacancy:
@@ -70,7 +45,7 @@ class HeadHunterAPI:
                 if not salary:
                     salary_from = 0
                     salary_to = 0
-                    currency = 'Currency not specified'
+                    currency = ''
                 else:
                     salary_from = vacancy['salary']['from'] if vacancy['salary']['from'] else 0
                     salary_to = vacancy['salary']['to'] if vacancy['salary']['to'] else 0
@@ -85,11 +60,5 @@ class HeadHunterAPI:
                                 'salary_to': salary_to,
                                 'currency': currency
                                 })
-
-        keys = vac_emp[0].keys()
-        with open("vacancies.csv", 'w', encoding='utf-8', newline='') as file:
-            file_writer = csv.DictWriter(file, keys)
-            file_writer.writeheader()
-            file_writer.writerows(vac_emp)
 
         return vac_emp
