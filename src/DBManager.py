@@ -116,6 +116,6 @@ class DBManager:
                         FROM vacancies
                         WHERE lower(name_vacancy) LIKE '%{kw}%'
                         """)
-            result = cur.ftchall()
+            result = cur.fetchall()
         conn.close()
         return result
