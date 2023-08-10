@@ -11,4 +11,7 @@ def write_csv(name_csv_file, api):
         file_writer.writerows(api)
 
 
+hh = HeadHunterAPI()
+vac = hh.get_vacancies_and_format()
+emp = hh.get_employers()
 
