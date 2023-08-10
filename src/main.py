@@ -18,8 +18,8 @@ def main():
 
     # Записываем полученные данные в файл csv
 
-    write_csv('vacancies.csv', vac_list)
-    write_csv('employers.csv', emp_list)
+    write_csv('vacancies', vac_list)
+    write_csv('employers', emp_list)
 
     # Выполнение sql запросов.
     # Получает список всех компаний и количество вакансий у каждой компании.
