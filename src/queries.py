@@ -28,7 +28,7 @@ GET_COMPANIES_AND_VACANCIES_COUNT = """
 
 # Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию.
 GET_ALL_VACANCIES = """
-                    SELECT employer, name_vacancy, salary_from, selary_to, currency, url_vac
+                    SELECT employer, name_vacancy, salary_from, salary_to, currency, url_vac
                     FROM vacancies
                     """
 
